@@ -101,7 +101,9 @@ public interface Client {
 
     @Override
     public Response execute(Request request, Options options) throws IOException {
+      // 发送请求
       HttpURLConnection connection = convertAndSend(request, options);
+      // 解析响应
       return convertResponse(connection, request);
     }
 
@@ -211,6 +213,7 @@ public interface Client {
           out = new DeflaterOutputStream(out);
         }
         try {
+          // 执行发送
           out.write(request.body());
         } finally {
           try {

@@ -97,6 +97,7 @@ public interface Target<T> {
     /* no authentication or other special activity. just insert the url. */
     @Override
     public Request apply(RequestTemplate input) {
+      // 设置下发的host
       if (input.url().indexOf("http") != 0) {
         input.target(url());
       }

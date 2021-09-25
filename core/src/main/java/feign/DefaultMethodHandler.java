@@ -35,11 +35,13 @@ final class DefaultMethodHandler implements MethodHandler {
   // handle is effectively final after bindTo has been called...
   private MethodHandle handle;
 
+  // 构造代理类
   public DefaultMethodHandler(Method defaultMethod) {
     Class<?> declaringClass = defaultMethod.getDeclaringClass();
 
     try {
       Lookup lookup = readLookup(declaringClass);
+      // 获得未绑定的代理方法
       this.unboundHandle = lookup.unreflectSpecial(defaultMethod, declaringClass);
     } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException
         | InvocationTargetException ex) {

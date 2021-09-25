@@ -79,13 +79,16 @@ final class SynchronousMethodHandler implements MethodHandler {
     }
   }
 
+  // 被调用的时候
   @Override
   public Object invoke(Object[] argv) throws Throwable {
+    // 根据参数创建请求模板
     RequestTemplate template = buildTemplateFromArgs.create(argv);
     Options options = findOptions(argv);
     Retryer retryer = this.retryer.clone();
     while (true) {
       try {
+        // 执行请求
         return executeAndDecode(template, options);
       } catch (RetryableException e) {
         try {
@@ -107,6 +110,7 @@ final class SynchronousMethodHandler implements MethodHandler {
   }
 
   Object executeAndDecode(RequestTemplate template, Options options) throws Throwable {
+    // 创建请求
     Request request = targetRequest(template);
 
     if (logLevel != Logger.Level.NONE) {
@@ -116,6 +120,7 @@ final class SynchronousMethodHandler implements MethodHandler {
     Response response;
     long start = System.nanoTime();
     try {
+      // 执行请求
       response = client.execute(request, options);
       // ensure the request is set. TODO: remove in Feign 12
       response = response.toBuilder()
@@ -132,6 +137,7 @@ final class SynchronousMethodHandler implements MethodHandler {
 
 
     if (decoder != null)
+      // 解码响应
       return decoder.decode(response, metadata.returnType());
 
     CompletableFuture<Object> resultFuture = new CompletableFuture<>();
@@ -157,6 +163,7 @@ final class SynchronousMethodHandler implements MethodHandler {
   }
 
   Request targetRequest(RequestTemplate template) {
+    // 扩展的拦截器
     for (RequestInterceptor interceptor : requestInterceptors) {
       interceptor.apply(template);
     }
@@ -206,6 +213,7 @@ final class SynchronousMethodHandler implements MethodHandler {
                                 Options options,
                                 Decoder decoder,
                                 ErrorDecoder errorDecoder) {
+      // 同步的代理
       return new SynchronousMethodHandler(target, client, retryer, requestInterceptors, logger,
           logLevel, md, buildTemplateFromArgs, options, decoder,
           errorDecoder, decode404, closeAfterDecode, propagationPolicy, forceDecoding);

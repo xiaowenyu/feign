@@ -26,6 +26,16 @@ public class EmptyTargetTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
+  interface TestQuery {
+
+    @RequestLine("GET /{path}?query={query}")
+    Response get(@Param("path") String path, @Param("query") String query);
+  }
+
+  public static void main(String[] args) {
+    System.out.println(Util.isDefault(TestQuery.class.getMethods()[0]));
+  }
+
   @Test
   public void whenNameNotSupplied() {
     assertThat(EmptyTarget.create(UriInterface.class))

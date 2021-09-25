@@ -43,13 +43,16 @@ public class ReflectiveFeign extends Feign {
    * creates an api binding to the {@code target}. As this invokes reflection, care should be taken
    * to cache the result.
    */
+  // 返回代理类
   @SuppressWarnings("unchecked")
   @Override
   public <T> T newInstance(Target<T> target) {
+    // 解析注解
     Map<String, MethodHandler> nameToHandler = targetToHandlersByName.apply(target);
     Map<Method, MethodHandler> methodToHandler = new LinkedHashMap<Method, MethodHandler>();
     List<DefaultMethodHandler> defaultMethodHandlers = new LinkedList<DefaultMethodHandler>();
 
+    // 遍历代理目标的方法
     for (Method method : target.type().getMethods()) {
       if (method.getDeclaringClass() == Object.class) {
         continue;
@@ -58,14 +61,17 @@ public class ReflectiveFeign extends Feign {
         defaultMethodHandlers.add(handler);
         methodToHandler.put(method, handler);
       } else {
+        // 接口代理走这里
         methodToHandler.put(method, nameToHandler.get(Feign.configKey(target.type(), method)));
       }
     }
+    // 调用feign.InvocationHandlerFactory.Default 的create
     InvocationHandler handler = factory.create(target, methodToHandler);
     T proxy = (T) Proxy.newProxyInstance(target.type().getClassLoader(),
         new Class<?>[] {target.type()}, handler);
 
     for (DefaultMethodHandler defaultMethodHandler : defaultMethodHandlers) {
+      // 所有方法绑定同一个代理，由同个代理分发
       defaultMethodHandler.bindTo(proxy);
     }
     return proxy;
@@ -83,6 +89,7 @@ public class ReflectiveFeign extends Feign {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+      // equals、hash和toString进行特殊处理
       if ("equals".equals(method.getName())) {
         try {
           Object otherHandler =
@@ -97,6 +104,7 @@ public class ReflectiveFeign extends Feign {
         return toString();
       }
 
+      // invoke
       return dispatch.get(method).invoke(args);
     }
 
@@ -148,6 +156,7 @@ public class ReflectiveFeign extends Feign {
     }
 
     public Map<String, MethodHandler> apply(Target target) {
+      // 注解触点解析 出注解元数据，可用spring触点
       List<MethodMetadata> metadata = contract.parseAndValidateMetadata(target.type());
       Map<String, MethodHandler> result = new LinkedHashMap<String, MethodHandler>();
       for (MethodMetadata md : metadata) {
@@ -165,6 +174,7 @@ public class ReflectiveFeign extends Feign {
             throw new IllegalStateException(md.configKey() + " is not a method handled by feign");
           });
         } else {
+          // 代理和key的映射
           result.put(md.configKey(),
               factory.create(target, md, buildTemplate, options, decoder, errorDecoder));
         }
@@ -208,6 +218,7 @@ public class ReflectiveFeign extends Feign {
 
     @Override
     public RequestTemplate create(Object[] argv) {
+      // 构建请求模板
       RequestTemplate mutable = RequestTemplate.from(metadata.template());
       mutable.feignTarget(target);
       if (metadata.urlIndex() != null) {

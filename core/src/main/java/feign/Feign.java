@@ -66,6 +66,7 @@ public abstract class Feign {
    * @param method invoked method, present on {@code type} or its super.
    * @see MethodMetadata#configKey()
    */
+  //route53.Route53#listAt(String, String)
   public static String configKey(Class targetType, Method method) {
     StringBuilder builder = new StringBuilder();
     builder.append(targetType.getSimpleName());
@@ -289,6 +290,7 @@ public abstract class Feign {
       ParseHandlersByName handlersByName =
           new ParseHandlersByName(contract, options, encoder, decoder, queryMapEncoder,
               errorDecoder, synchronousMethodHandlerFactory);
+      // 构造反射的feign
       return new ReflectiveFeign(handlersByName, invocationHandlerFactory, queryMapEncoder);
     }
   }

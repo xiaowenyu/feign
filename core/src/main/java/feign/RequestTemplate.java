@@ -269,6 +269,7 @@ public final class RequestTemplate implements Serializable {
    * @return a new Request instance.
    * @throws IllegalStateException if this template has not been resolved.
    */
+  // 创建请求
   public Request request() {
     if (!this.resolved) {
       throw new IllegalStateException("template has not been resolved.");
